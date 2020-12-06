@@ -25,6 +25,14 @@ message FastCorrelativeScanMatcherOptions2D {
   // will be found.
   double angular_search_window = 4;
 
+  // Minimum linear search window in which the best possible scan alignment
+  // will be found.
+  double linear_search_window_locate_succeed = 5;
+
+  // Minimum angular search window in which the best possible scan alignment
+  // will be found.
+  double angular_search_window_locate_succeed = 6;
+
   // Number of precomputed grids to use.
   int32 branch_and_bound_depth = 2;
 }

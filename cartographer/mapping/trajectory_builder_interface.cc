@@ -48,6 +48,10 @@ void PopulatePoseGraphOdometryMotionFilterOptions(
       trajectory_builder_options->mutable_pose_graph_odometry_motion_filter();
   options->set_max_time_seconds(
       options_dictionary->GetDouble("max_time_seconds"));
+  options->set_max_time_seconds_locating(
+      parameter_dictionary->GetDouble("max_time_seconds_locating"));
+  options->set_max_time_seconds_locate_succeed(
+      parameter_dictionary->GetDouble("max_time_seconds_locate_succeed"));
   options->set_max_distance_meters(
       options_dictionary->GetDouble("max_distance_meters"));
   options->set_max_angle_radians(

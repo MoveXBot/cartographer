@@ -15,6 +15,7 @@
  */
 
 #include "cartographer/mapping/internal/2d/pose_graph_2d.h"
+#include "cartographer/io/status.h"
 
 #include <algorithm>
 #include <cmath>
@@ -277,7 +278,9 @@ void PoseGraph2D::ComputeConstraint(const NodeId& node_id,
     const common::Time last_connection_time =
         data_.trajectory_connectivity_state.LastConnectionTime(
             node_id.trajectory_id, submap_id.trajectory_id);
-    if (node_id.trajectory_id == submap_id.trajectory_id ||
+    if (cartographer::io::slam_state == cartographer::io::SLAM_STATE_LOCATING ||
+        cartographer::io::slam_state == cartographer::io::SLAM_STATE_LOCATE_SUCCEED ||
+        node_id.trajectory_id == submap_id.trajectory_id ||
         node_time <
             last_connection_time +
                 common::FromSeconds(

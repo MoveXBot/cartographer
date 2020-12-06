@@ -15,6 +15,7 @@
  */
 
 #include "cartographer/mapping/internal/2d/scan_matching/fast_correlative_scan_matcher_2d.h"
+#include "cartographer/io/status.h"
 
 #include <algorithm>
 #include <cmath>
@@ -83,6 +84,10 @@ CreateFastCorrelativeScanMatcherOptions2D(
       parameter_dictionary->GetDouble("linear_search_window"));
   options.set_angular_search_window(
       parameter_dictionary->GetDouble("angular_search_window"));
+  options.set_linear_search_window_locate_succeed(
+      parameter_dictionary->GetDouble("linear_search_window_locate_succeed"));
+  options.set_angular_search_window_locate_succeed(
+      parameter_dictionary->GetDouble("angular_search_window_locate_succeed"));
   options.set_branch_and_bound_depth(
       parameter_dictionary->GetInt("branch_and_bound_depth"));
   return options;
@@ -199,8 +204,19 @@ bool FastCorrelativeScanMatcher2D::Match(
     const transform::Rigid2d& initial_pose_estimate,
     const sensor::PointCloud& point_cloud, const float min_score, float* score,
     transform::Rigid2d* pose_estimate) const {
-  const SearchParameters search_parameters(options_.linear_search_window(),
-                                           options_.angular_search_window(),
+  double linear_search_window,angular_search_window;
+  if(cartographer::io::slam_state == cartographer::io::SLAM_STATE_LOCATE_SUCCEED)
+  {
+    linear_search_window = options_.linear_search_window_locate_succeed();
+    angular_search_window = options_.angular_search_window_locate_succeed();
+  }
+  else
+  {
+    linear_search_window = options_.linear_search_window();
+    angular_search_window = options_.angular_search_window();
+  }
+  const SearchParameters search_parameters(linear_search_window,
+                                           angular_search_window,
                                            point_cloud, limits_.resolution());
   return MatchWithSearchParameters(search_parameters, initial_pose_estimate,
                                    point_cloud, min_score, score,

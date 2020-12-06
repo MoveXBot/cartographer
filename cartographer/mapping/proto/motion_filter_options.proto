@@ -20,6 +20,10 @@ message MotionFilterOptions {
   // Threshold above which range data is inserted based on time.
   double max_time_seconds = 1;
 
+  double max_time_seconds_locating = 4;
+
+  double max_time_seconds_locate_succeed = 5;
+
   // Threshold above which range data is inserted based on linear motion.
   double max_distance_meters = 2;
 
