@@ -30,6 +30,8 @@ proto::MotionFilterOptions CreateMotionFilterOptions(
       parameter_dictionary->GetDouble("max_time_seconds"));
   options.set_max_time_seconds_locating(
       parameter_dictionary->GetDouble("max_time_seconds_locating"));
+  options.set_max_time_seconds_relocating(
+      parameter_dictionary->GetDouble("max_time_seconds_relocating"));
   options.set_max_time_seconds_locate_succeed(
       parameter_dictionary->GetDouble("max_time_seconds_locate_succeed"));
   options.set_max_distance_meters(
@@ -50,6 +52,8 @@ bool MotionFilter::IsSimilar(const common::Time time,
   common::Duration time_duration = common::FromSeconds(options_.max_time_seconds());
   if(cartographer::io::slam_state == cartographer::io::SLAM_STATE_LOCATING)
     time_duration = common::FromSeconds(options_.max_time_seconds_locating());
+  if(cartographer::io::slam_state == cartographer::io::SLAM_STATE_RELOCATING)
+    time_duration = common::FromSeconds(options_.max_time_seconds_relocating());
   else if(cartographer::io::slam_state == cartographer::io::SLAM_STATE_LOCATE_SUCCEED)
     time_duration = common::FromSeconds(options_.max_time_seconds_locate_succeed());
   ++num_total_;

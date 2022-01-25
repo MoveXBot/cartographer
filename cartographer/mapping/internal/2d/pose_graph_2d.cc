@@ -278,7 +278,8 @@ void PoseGraph2D::ComputeConstraint(const NodeId& node_id,
     const common::Time last_connection_time =
         data_.trajectory_connectivity_state.LastConnectionTime(
             node_id.trajectory_id, submap_id.trajectory_id);
-    if (cartographer::io::slam_state == cartographer::io::SLAM_STATE_LOCATING ||
+    if (/* cartographer::io::slam_state == cartographer::io::SLAM_STATE_LOCATING || */
+        cartographer::io::slam_state == cartographer::io::SLAM_STATE_RELOCATING ||
         cartographer::io::slam_state == cartographer::io::SLAM_STATE_LOCATE_SUCCEED ||
         node_id.trajectory_id == submap_id.trajectory_id ||
         node_time <
@@ -918,20 +919,20 @@ bool PoseGraph2D::CanAddWorkItemModifying(int trajectory_id) {
   }
   if (it->second.state == TrajectoryState::FINISHED) {
     // TODO(gaschler): Replace all FATAL to WARNING after some testing.
-    LOG(FATAL) << "trajectory_id " << trajectory_id
+    LOG(WARNING) << "trajectory_id " << trajectory_id
                << " has finished "
                   "but modification is requested, skipping.";
     return false;
   }
   if (it->second.deletion_state !=
       InternalTrajectoryState::DeletionState::NORMAL) {
-    LOG(FATAL) << "trajectory_id " << trajectory_id
+    LOG(WARNING) << "trajectory_id " << trajectory_id
                << " has been scheduled for deletion "
                   "but modification is requested, skipping.";
     return false;
   }
   if (it->second.state == TrajectoryState::DELETED) {
-    LOG(FATAL) << "trajectory_id " << trajectory_id
+    LOG(WARNING) << "trajectory_id " << trajectory_id
                << " has been deleted "
                   "but modification is requested, skipping.";
     return false;

@@ -50,6 +50,8 @@ void PopulatePoseGraphOdometryMotionFilterOptions(
       options_dictionary->GetDouble("max_time_seconds"));
   options->set_max_time_seconds_locating(
       parameter_dictionary->GetDouble("max_time_seconds_locating"));
+  options->set_max_time_seconds_relocating(
+      parameter_dictionary->GetDouble("max_time_seconds_relocating"));
   options->set_max_time_seconds_locate_succeed(
       parameter_dictionary->GetDouble("max_time_seconds_locate_succeed"));
   options->set_max_distance_meters(

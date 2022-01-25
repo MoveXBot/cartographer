@@ -22,7 +22,9 @@ message MotionFilterOptions {
 
   double max_time_seconds_locating = 4;
 
-  double max_time_seconds_locate_succeed = 5;
+  double max_time_seconds_relocating = 5;
+
+  double max_time_seconds_locate_succeed = 6;
 
   // Threshold above which range data is inserted based on linear motion.
   double max_distance_meters = 2;
