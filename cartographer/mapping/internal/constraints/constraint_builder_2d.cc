@@ -15,6 +15,7 @@
  */
 
 #include "cartographer/mapping/internal/constraints/constraint_builder_2d.h"
+#include "cartographer/io/status.h"
 
 #include <cmath>
 #include <functional>
@@ -61,6 +62,7 @@ ConstraintBuilder2D::ConstraintBuilder2D(
     common::ThreadPoolInterface* const thread_pool)
     : options_(options),
       thread_pool_(thread_pool),
+      total_node_id_size_(0),
       finish_node_task_(absl::make_unique<common::Task>()),
       when_done_task_(absl::make_unique<common::Task>()),
       ceres_scan_matcher_(options.ceres_scan_matcher_options()) {}
@@ -77,7 +79,8 @@ ConstraintBuilder2D::~ConstraintBuilder2D() {
 void ConstraintBuilder2D::MaybeAddConstraint(
     const SubmapId& submap_id, const Submap2D* const submap,
     const NodeId& node_id, const TrajectoryNode::Data* const constant_data,
-    const transform::Rigid2d& initial_relative_pose) {
+    const transform::Rigid2d& initial_relative_pose,
+    const int &total_node_id_size) {
   if (initial_relative_pose.translation().norm() >
       options_.max_constraint_distance()) {
     return;
@@ -94,6 +97,8 @@ void ConstraintBuilder2D::MaybeAddConstraint(
     LOG(WARNING)
         << "MaybeAddConstraint was called while WhenDone was scheduled.";
   }
+
+  total_node_id_size_ = total_node_id_size;
   constraints_.emplace_back();
   kQueueLengthMetric->Set(constraints_.size());
   auto* const constraint = &constraints_.back();
@@ -196,6 +201,34 @@ void ConstraintBuilder2D::ComputeConstraint(
   const transform::Rigid2d initial_pose =
       ComputeSubmapPose(*submap) * initial_relative_pose;
 
+  static int last_total_node_id_size = total_node_id_size_;
+  static int last_valid_node_id_count = total_node_id_size_; //TODO: 重新启动轨迹后重置该值
+  bool flag_new_node = false;
+  LOG(INFO) << "submapid:" << node_id.trajectory_id << ",total_node_id_size_: "  << total_node_id_size_;
+  if(total_node_id_size_ != last_total_node_id_size)
+  {
+    flag_new_node = true;
+    last_total_node_id_size = total_node_id_size_;
+  }
+  if(flag_new_node)
+  {
+    if(cartographer::io::slam_state == cartographer::io::SLAM_STATE_LOCATE_SUCCEED)
+    {
+      cartographer::io::invalid_node_count = total_node_id_size_ - last_valid_node_id_count;
+      LOG(INFO) << "invalid node count: " << cartographer::io::invalid_node_count;
+    }
+    else if(cartographer::io::slam_state != cartographer::io::SLAM_STATE_LOCATE_SUCCEED)
+    {
+      last_valid_node_id_count = total_node_id_size_;
+    }
+  }
+
+  // static transform::Rigid2d last_initial_pose = initial_pose;
+  // double distance = (initial_pose.translation() - last_initial_pose.translation()).norm();
+  // double angle = common::NormalizeAngleDifference(initial_pose.rotation().angle() - last_initial_pose.rotation().angle());
+  // last_initial_pose = initial_pose;
+  // LOG(INFO) << "node_id: " << node_id << ",submap_id: " << submap_id << ",distance: " << distance << ",angle: " << initial_pose.rotation().angle();
+
   // The 'constraint_transform' (submap i <- node j) is computed from:
   // - a 'filtered_gravity_aligned_point_cloud' in node j,
   // - the initial guess 'initial_pose' for (map <- node j),
@@ -230,14 +263,21 @@ void ConstraintBuilder2D::ComputeConstraint(
       CHECK_GT(score, options_.min_score());
       kConstraintsFoundMetric->Increment();
       kConstraintScoresMetric->Observe(score);
+      if(flag_new_node && submap_id.trajectory_id < node_id.trajectory_id)
+      {
+        last_valid_node_id_count = total_node_id_size_;
+        LOG(INFO) << "found valid node, node id count: " << last_valid_node_id_count;
+      }
     } else {
+      // LOG(INFO) << "found no match,nodeId: " << node_id << ",submap_id: " << submap_id;
       return;
     }
   }
-  {
-    absl::MutexLock locker(&mutex_);
-    score_histogram_.Add(score);
-  }
+  // if(submap_id.trajectory_id < node_id.trajectory_id)
+  // {
+  //   absl::MutexLock locker(&mutex_);
+  //   score_histogram_.Add(score);
+  // }
 
   // Use the CSM estimate as both the initial and previous pose. This has the
   // effect that, in the absence of better information, we prefer the original
@@ -257,7 +297,7 @@ void ConstraintBuilder2D::ComputeConstraint(
                                     options_.loop_closure_rotation_weight()},
                                    Constraint::INTER_SUBMAP});
 
-  if (options_.log_matches()) {
+  if (options_.log_matches() && submap_id.trajectory_id < node_id.trajectory_id) {
     std::ostringstream info;
     info << "Node " << node_id << " with "
          << constant_data->filtered_gravity_aligned_point_cloud.size()

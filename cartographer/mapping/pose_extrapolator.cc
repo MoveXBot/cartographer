@@ -89,17 +89,35 @@ void PoseExtrapolator::AddPose(const common::Time time,
 }
 
 void PoseExtrapolator::AddImuData(const sensor::ImuData& imu_data) {
-  CHECK(timed_pose_queue_.empty() ||
-        imu_data.time >= timed_pose_queue_.back().time);
-  imu_data_.push_back(imu_data);
+  // CHECK(timed_pose_queue_.empty() ||
+  //       imu_data.time >= timed_pose_queue_.back().time);
+  // LOG_IF(ERROR,(!timed_pose_queue_.empty() && imu_data.time < timed_pose_queue_.back().time));
+  if(timed_pose_queue_.empty() || imu_data.time >= timed_pose_queue_.back().time)
+    imu_data_.push_back(imu_data);
+  else
+  {
+    LOG(ERROR) << "imu_data.time: " << imu_data.time << ",timed_pose_queue_.back().time: " << timed_pose_queue_.back().time;
+    sensor::ImuData imu_data_temp = imu_data;
+    imu_data_temp.time = timed_pose_queue_.back().time + common::FromMilliseconds(1);
+    imu_data_.push_back(imu_data_temp);
+  }
   TrimImuData();
 }
 
 void PoseExtrapolator::AddOdometryData(
     const sensor::OdometryData& odometry_data) {
-  CHECK(timed_pose_queue_.empty() ||
-        odometry_data.time >= timed_pose_queue_.back().time);
-  odometry_data_.push_back(odometry_data);
+  // CHECK(timed_pose_queue_.empty() ||
+  //       odometry_data.time >= timed_pose_queue_.back().time);
+  // LOG_IF(ERROR,(!timed_pose_queue_.empty() && odometry_data.time < timed_pose_queue_.back().time));
+  if(timed_pose_queue_.empty() || odometry_data.time >= timed_pose_queue_.back().time)
+    odometry_data_.push_back(odometry_data);
+  else
+  {
+    LOG(ERROR) << "odometry_data.time: " << odometry_data.time << ",timed_pose_queue_.back().time: " << timed_pose_queue_.back().time;
+    sensor::OdometryData odometry_data_temp = odometry_data;
+    odometry_data_temp.time = timed_pose_queue_.back().time + common::FromMilliseconds(1);
+    odometry_data_.push_back(odometry_data_temp);
+  }
   TrimOdometryData();
   if (odometry_data_.size() < 2) {
     return;
@@ -195,7 +213,7 @@ void PoseExtrapolator::TrimOdometryData() {
 
 void PoseExtrapolator::AdvanceImuTracker(const common::Time time,
                                          ImuTracker* const imu_tracker) const {
-  CHECK_GE(time, imu_tracker->time());
+  // CHECK_GE(time, imu_tracker->time());
   if (imu_data_.empty() || time < imu_data_.front().time) {
     // There is no IMU data until 'time', so we advance the ImuTracker and use
     // the angular velocities from poses and fake gravity to help 2D stability.
@@ -226,7 +244,7 @@ void PoseExtrapolator::AdvanceImuTracker(const common::Time time,
 
 Eigen::Quaterniond PoseExtrapolator::ExtrapolateRotation(
     const common::Time time, ImuTracker* const imu_tracker) const {
-  CHECK_GE(time, imu_tracker->time());
+  // CHECK_GE(time, imu_tracker->time());
   AdvanceImuTracker(time, imu_tracker);
   const Eigen::Quaterniond last_orientation = imu_tracker_->orientation();
   return last_orientation.inverse() * imu_tracker->orientation();

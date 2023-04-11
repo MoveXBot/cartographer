@@ -78,6 +78,7 @@ std::unique_ptr<transform::Rigid2d> LocalTrajectoryBuilder2D::ScanMatch(
     const double score = real_time_correlative_scan_matcher_.Match(
         pose_prediction, filtered_gravity_aligned_point_cloud,
         *matching_submap->grid(), &initial_ceres_pose);
+    // LOG(INFO) << "score: " << score;
     kRealTimeCorrelativeScanMatcherScoreMetric->Observe(score);
   }
 

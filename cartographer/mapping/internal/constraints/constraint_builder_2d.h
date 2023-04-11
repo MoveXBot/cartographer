@@ -78,7 +78,8 @@ class ConstraintBuilder2D {
   void MaybeAddConstraint(const SubmapId& submap_id, const Submap2D* submap,
                           const NodeId& node_id,
                           const TrajectoryNode::Data* const constant_data,
-                          const transform::Rigid2d& initial_relative_pose);
+                          const transform::Rigid2d& initial_relative_pose,
+                          const int &total_node_id_size = 0);
 
   // Schedules exploring a new constraint between 'submap' identified by
   // 'submap_id' and the 'compressed_point_cloud' for 'node_id'.
@@ -135,6 +136,7 @@ class ConstraintBuilder2D {
 
   const constraints::proto::ConstraintBuilderOptions options_;
   common::ThreadPoolInterface* thread_pool_;
+  int total_node_id_size_;
   absl::Mutex mutex_;
 
   // 'callback' set by WhenDone().
