@@ -137,6 +137,7 @@ NodeId PoseGraph2D::AppendNode(
   const NodeId node_id = data_.trajectory_nodes.Append(
       trajectory_id, TrajectoryNode{constant_data, optimized_pose});
   ++data_.num_trajectory_nodes;
+  // LOG(INFO) << "num_trajectory_nodes: " << data_.num_trajectory_nodes << ",node_id: " << node_id;
   // Test if the 'insertion_submap.back()' is one we never saw before.
   if (data_.submap_data.SizeOfTrajectoryOrZero(trajectory_id) == 0 ||
       std::prev(data_.submap_data.EndOfTrajectory(trajectory_id))
@@ -306,7 +307,7 @@ void PoseGraph2D::ComputeConstraint(const NodeId& node_id,
             .global_pose.inverse() *
         optimization_problem_->node_data().at(node_id).global_pose_2d;
     constraint_builder_.MaybeAddConstraint(
-        submap_id, submap, node_id, constant_data, initial_relative_pose);
+        submap_id, submap, node_id, constant_data, initial_relative_pose,data_.num_trajectory_nodes);
   } else if (maybe_add_global_constraint) {
     constraint_builder_.MaybeAddGlobalConstraint(submap_id, submap, node_id,
                                                  constant_data);

@@ -61,7 +61,7 @@ TRAJECTORY_BUILDER_3D = {
 
   motion_filter = {
     max_time_seconds = 0.5,
-    max_time_seconds_locating = 0.1,
+    max_time_seconds_locating = 1.0,
     max_time_seconds_relocating = 0.02,
     max_time_seconds_locate_succeed = 0,
     max_distance_meters = 0.1,
