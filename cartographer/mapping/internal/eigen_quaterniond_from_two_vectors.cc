@@ -14,22 +14,15 @@
  * limitations under the License.
  */
 
-#include "cartographer/mapping/2d/tsd_value_converter.h"
+#include "cartographer/mapping/internal/eigen_quaterniond_from_two_vectors.h"
 
 namespace cartographer {
 namespace mapping {
 
-TSDValueConverter::TSDValueConverter(float max_tsd, float max_weight,
-                                     ValueConversionTables* conversion_tables)
-    : max_tsd_(max_tsd),
-      min_tsd_(-max_tsd),
-      max_weight_(max_weight),
-      tsd_resolution_(32766.f / (max_tsd_ - min_tsd_)),
-      weight_resolution_(32766.f / (max_weight_ - min_weight_)),
-      value_to_tsd_(
-          conversion_tables->GetConversionTable(min_tsd_, min_tsd_, max_tsd_)),
-      value_to_weight_(conversion_tables->GetConversionTable(
-          min_weight_, min_weight_, max_weight)) {}
+Eigen::Quaterniond FromTwoVectors(const Eigen::Vector3d& a,
+                                  const Eigen::Vector3d& b) {
+  return Eigen::Quaterniond::FromTwoVectors(a, b);
+}
 
 }  // namespace mapping
 }  // namespace cartographer

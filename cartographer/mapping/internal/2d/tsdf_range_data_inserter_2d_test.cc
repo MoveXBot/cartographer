@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-#include "cartographer/mapping/2d/tsdf_range_data_inserter_2d.h"
+#include "cartographer/mapping/internal/2d/tsdf_range_data_inserter_2d.h"
 
+#include "cartographer/common/internal/testing/lua_parameter_dictionary_test_helpers.h"
 #include "cartographer/common/lua_parameter_dictionary.h"
-#include "cartographer/common/lua_parameter_dictionary_test_helpers.h"
 #include "gmock/gmock.h"
 
 namespace cartographer {
